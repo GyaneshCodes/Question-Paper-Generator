@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Question Paper Generator</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Automated Question Paper Generator</h1>
+        <p>
+          Create a formatted question paper by selecting questions from your
+          master question bank.
+        </p>
+      </header>
+
+      <div class="card">
+        <h2>Step 1: Upload Your Question Bank</h2>
+        <p>
+          Select your clean, structured Excel file (.xlsx). Ensure it has the
+          correct headers: <code>Question_Text</code>,
+          <code>Question_Type</code>, etc.
+        </p>
+        <input type="file" id="fileUploader" accept=".xlsx, .xls" />
+      </div>
+
+      <div class="card" id="selection-area" style="display: none">
+        <h2>Step 2: Select Your Questions</h2>
+        <div class="controls">
+          <button id="checkAllBtn">Check All</button>
+          <button id="uncheckAllBtn">Uncheck All</button>
+          <span id="counter">Selected: 0</span>
+        </div>
+        <div id="questionList">
+          <!-- Questions will be dynamically inserted here -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Step 3: Generate the Paper</h2>
+        <p>
+          Once you've selected your questions, click the button below. The
+          formatted paper will be created in your Google Sheet.
+        </p>
+        <button id="submitButton" disabled>Generate Question Paper</button>
+        <div id="loader" class="loader" style="display: none"></div>
+        <p id="status-message"></p>
+      </div>
+    </div>
+
+    <!-- Library to read Excel files in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Your custom application logic -->
+    <script src="app.js"></script>
+  </body>
+</html>
