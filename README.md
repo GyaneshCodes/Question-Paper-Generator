@@ -91,7 +91,7 @@ This section details the initial one-time setup required to get the system onlin
 
 ## Project Roadmap
 
-### v1.0: Core Functionality (Current State - October 2025)
+### v1.0: Core Functionality (Previous State - October 2025)
 
 - Features:
   - Successful upload and parsing of a structured .xlsx file.
@@ -102,7 +102,7 @@ This section details the initial one-time setup required to get the system onlin
   - Limited error handling for incorrectly formatted upload files.
   - The user interface is functional but could be more intuitive with more feedback.
 
-### v1.1: Stability & UX Improvements (Next Steps)
+### v1.1: Stability & UX Improvements (Current State - October 2025)
 
 - Enhanced Error Handling: Improve the file validation in app.js. Provide clearer, user-friendly error messages if the required columns (Question_Text, Question_Type) are missing.
 - UI Refinements:
@@ -111,7 +111,7 @@ This section details the initial one-time setup required to get the system onlin
   - Ensure the design is fully responsive for different screen sizes.
 - State Persistence: Use browser localStorage to remember a user's checkbox selections if they accidentally refresh the page.
 
-### v1.5: Feature Enhancements (Mid-Term Goals)
+### v1.5: Feature Enhancements (Next Goals)
 
 - Advanced Question Filtering: Add dropdown menus at the top of the checklist to filter questions by Question_Type or a new Topic/Unit column from the Excel file. This would allow a teacher to instantly see all "MCQ" questions about "Unit 1".
 

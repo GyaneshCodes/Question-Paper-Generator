@@ -6,16 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkAllBtn = document.getElementById("checkAllBtn");
   const uncheckAllBtn = document.getElementById("uncheckAllBtn");
   const counterSpan = document.getElementById("counter");
+  const mcqCounterSpan = document.getElementById("mcqCounter");
+  const shortCounterSpan = document.getElementById("shortCounter");
+  const longCounterSpan = document.getElementById("longCounter");
   const loader = document.getElementById("loader");
   const statusMessage = document.getElementById("status-message");
 
-  // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
   const WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbwxq4q3CbMXQ-4MVmw5peLmnpgRPFHh9bJE9NK2joRgXpw1jRXkWnvRcqiecWYFCItdbg/exec";
 
   let allQuestions = [];
-
-  // --- Event Listeners ---
 
   fileUploader.addEventListener("change", handleFileUpload);
   submitButton.addEventListener("click", generateQuestionPaper);
@@ -23,11 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
   uncheckAllBtn.addEventListener("click", () => toggleAllCheckboxes(false));
   questionListDiv.addEventListener("change", updateSelectionCounter);
 
-  // --- Core Functions ---
-
   function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    localStorage.removeItem("selectedQuestions");
 
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -38,17 +38,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const worksheet = workbook.Sheets[firstSheetName];
         allQuestions = XLSX.utils.sheet_to_json(worksheet);
 
-        // Validate headers
         if (!validateHeaders(allQuestions[0])) {
           throw new Error(
-            "Invalid file format. Please ensure your Excel file has the required columns: Question_Text and Question_Type."
+            "Invalid file format. Ensure columns 'Question_Text' and 'Question_Type' exist."
           );
         }
 
         displayQuestions();
         selectionArea.style.display = "block";
         submitButton.disabled = false;
-        statusMessage.textContent = "";
+        statusMessage.textContent =
+          "File loaded successfully. Please select questions.";
+        statusMessage.style.color = "green";
       } catch (error) {
         console.error("File processing error:", error);
         statusMessage.textContent = `Error: ${error.message}`;
@@ -64,16 +65,17 @@ document.addEventListener("DOMContentLoaded", () => {
     allQuestions.forEach((q, index) => {
       const questionType = (q.Question_Type || "N/A").toLowerCase();
       const questionItem = `
-                <div class="question-item">
-                    <input type="checkbox" id="q_${index}" value="${index}">
-                    <label for="q_${index}">${
+        <div class="question-item">
+            <input type="checkbox" id="q_${index}" value="${index}" data-type="${questionType}">
+            <label for="q_${index}">${
         q.Question_Text || "No question text found."
       }</label>
-                    <span class="type-badge badge-${questionType}">${questionType.toUpperCase()}</span>
-                </div>
-            `;
+            <span class="type-badge badge-${questionType}">${questionType.toUpperCase()}</span>
+        </div>
+      `;
       questionListDiv.innerHTML += questionItem;
     });
+    loadSelections();
     updateSelectionCounter();
   }
 
@@ -93,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
       selectedQuestions.push(allQuestions[cb.value]);
     });
 
-    // Show loader and disable button
     loader.style.display = "block";
     submitButton.disabled = true;
     statusMessage.textContent = "Generating your paper... Please wait.";
@@ -116,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.status === "success") {
         statusMessage.textContent = `Success! ${result.message}`;
         statusMessage.style.color = "green";
+        localStorage.removeItem("selectedQuestions"); // Clear selections on success
       } else {
         throw new Error(result.message);
       }
@@ -124,13 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
       statusMessage.textContent = `An error occurred: ${error.message}`;
       statusMessage.style.color = "red";
     } finally {
-      // Hide loader and re-enable button
       loader.style.display = "none";
       submitButton.disabled = false;
     }
   }
-
-  // --- Helper Functions ---
 
   function validateHeaders(firstQuestion) {
     if (!firstQuestion) return false;
@@ -148,15 +147,56 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateSelectionCounter() {
-    const selectedCount = document.querySelectorAll(
+    const selectedCheckboxes = document.querySelectorAll(
       '#questionList input[type="checkbox"]:checked'
-    ).length;
+    );
+    const selectedCount = selectedCheckboxes.length;
+
+    let mcqCount = 0;
+    let shortCount = 0;
+    let longCount = 0;
+
+    selectedCheckboxes.forEach((cb) => {
+      const type = cb.getAttribute("data-type");
+      if (type === "mcq") mcqCount++;
+      else if (type === "short") shortCount++;
+      else if (type === "long") longCount++;
+    });
+
     counterSpan.textContent = `Selected: ${selectedCount}`;
+    mcqCounterSpan.textContent = `MCQs: ${mcqCount}`;
+    shortCounterSpan.textContent = `Short: ${shortCount}`;
+    longCounterSpan.textContent = `Long: ${longCount}`;
+
+    saveSelections();
+  }
+
+  function saveSelections() {
+    const selectedCheckboxes = document.querySelectorAll(
+      '#questionList input[type="checkbox"]:checked'
+    );
+    const selectedIndices = Array.from(selectedCheckboxes).map(
+      (cb) => cb.value
+    );
+    localStorage.setItem("selectedQuestions", JSON.stringify(selectedIndices));
+  }
+
+  function loadSelections() {
+    const selectedIndices =
+      JSON.parse(localStorage.getItem("selectedQuestions")) || [];
+    selectedIndices.forEach((index) => {
+      const checkbox = document.getElementById(`q_${index}`);
+      if (checkbox) {
+        checkbox.checked = true;
+      }
+    });
   }
 
   function resetUI() {
     selectionArea.style.display = "none";
     submitButton.disabled = true;
     allQuestions = [];
+    questionListDiv.innerHTML = "";
+    updateSelectionCounter();
   }
 });
